@@ -8,6 +8,8 @@ public class PlayerMovement : MonoBehaviour
     public float playerSpeed = 3f;
     public float jumpHeight = 7f;
     private bool inAir = true;
+    private float jumpCharger;
+    private bool jumpDischarge;
     private float horizontal;
     private float vertical;
     // Start is called before the first frame update
@@ -19,29 +21,60 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        vertical = Input.GetAxis("Jump");
+        vertical = Input.GetAxis("Vertical");
         horizontal = Input.GetAxis("Horizontal");
 
-        if (Input.GetKey(KeyCode.D))
+        if (horizontal > 0)
         {
             mRB.velocity = new Vector3(playerSpeed, mRB.velocity.y);
         }
-        else if (Input.GetKey(KeyCode.A))
+        else if (horizontal < 0)
         {
             mRB.velocity = new Vector3(-playerSpeed, mRB.velocity.y);
         }
         else
         {
-            mRB.velocity = new Vector3(mRB.velocity.x * 0.87f, mRB.velocity.y);
+            mRB.velocity = new Vector3(mRB.velocity.x, mRB.velocity.y);
         }
 
-        if (Input.GetKey(KeyCode.W) && inAir == false)
+        if (Input.GetKey(KeyCode.LeftControl))
         {
-            mRB.velocity = new Vector3(mRB.velocity.x, jumpHeight);
-            inAir = true;
+            jumpCharger += Time.deltaTime;
+        }
+
+        if (Input.GetKeyUp(KeyCode.LeftControl))
+        {
+            jumpCharger = 0f;
+        }
+
+        if (vertical > 0 && inAir == false)
+        {
+            jumpDischarge = true;
         }
         
 
+    }
+
+    private void FixedUpdate()
+    {
+        if (jumpDischarge)
+        {
+            if (jumpCharger <= 2f)
+            {
+                mRB.velocity = new Vector3(mRB.velocity.x, jumpHeight);
+            }
+            else
+            {
+                mRB.velocity = new Vector3(mRB.velocity.x, jumpHeight * 1.5f);
+            }
+
+            jumpDischarge = false;
+            jumpCharger = 0f;
+            inAir = true;
+
+        }
+        
+        
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
